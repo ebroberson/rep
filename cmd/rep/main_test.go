@@ -235,11 +235,16 @@ var _ = Describe("The Rep", func() {
 		runner.Start()
 	})
 
-	AfterEach(func(done Done) {
-		close(flushEvents)
-		runner.KillWithFire()
-		fakeGarden.Close()
-		close(done)
+	AfterEach(func() {
+		done := make(chan interface{})
+		timeout := 5
+		go func() {
+			close(flushEvents)
+			runner.KillWithFire()
+			fakeGarden.Close()
+			close(done)
+		}()
+		Eventually(done, timeout).Should(BeClosed())
 	})
 
 	Context("the rep doesn't start", func() {
